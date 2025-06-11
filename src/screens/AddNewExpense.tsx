@@ -6,46 +6,72 @@ import {
   KeyboardAvoidingView,
   Alert,
 } from "react-native";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import { RootStackParamList } from "./types/Navigation";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { RouteProp } from "@react-navigation/native";
 
 type AddNewExpenseProps = {
   navigation: NativeStackNavigationProp<
     RootStackParamList,
     "AddNewExpenseScreen"
   >;
+  route: RouteProp<RootStackParamList, "AddNewExpenseScreen">;
 };
 
 const STORAGE_KEY = "expenses";
 
 export default function AddNewExpense(props: AddNewExpenseProps) {
+  const { id } = props.route.params ?? {};
+
   const [expense, setExpense] = useState<string>("");
   const [amount, setAmount] = useState<string>("");
 
-  const handleAddNewExpense = async () => {
+  useEffect(() => {
+    if (id) {
+      AsyncStorage.getItem(STORAGE_KEY).then((stored) => {
+        const expenseList = stored ? JSON.parse(stored) : [];
+        const found = expenseList.find((e: any) => e.id === id);
+        if (found) {
+          setExpense(found.expense);
+          setAmount(found.amount.toString());
+        }
+      });
+    }
+  }, [id]);
+
+  const handleAddOrUpdateExpense = async () => {
     if (!expense || isNaN(parseFloat(amount))) {
       Alert.alert("Error", "Please enter valid values.");
       return;
     }
 
-    const newExpense = {
-      id: Date.now().toString(),
-      expense,
-      amount: parseFloat(amount),
-    };
-
     try {
       const stored = await AsyncStorage.getItem(STORAGE_KEY);
       const expenseList = stored ? JSON.parse(stored) : [];
 
-      const updatedList = [...expenseList, newExpense];
+      if (id) {
+        // Düzenleme: mevcut kaydı güncelle
+        const updatedList = expenseList.map((e: any) =>
+          e.id === id ? { ...e, expense, amount: parseFloat(amount) } : e
+        );
+        await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedList));
+        Alert.alert("Updated", "Expense updated!");
+      } else {
+        // Yeni ekleme
+        const newExpense = {
+          id: Date.now().toString(),
+          expense,
+          amount: parseFloat(amount),
+        };
+        const updatedList = [...expenseList, newExpense];
 
-      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedList));
+        await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedList));
 
-      Alert.alert("Saved", "New expense added!");
+        Alert.alert("Saved", "New expense added!");
+      }
 
       props.navigation.navigate("HomeScreen");
     } catch (err) {
@@ -55,7 +81,9 @@ export default function AddNewExpense(props: AddNewExpenseProps) {
 
   return (
     <KeyboardAvoidingView style={myStyles.container}>
-      <Text style={myStyles.title}>ADD NEW EXPENSE</Text>
+      <Text style={myStyles.title}>
+        {id ? "EDIT EXPENSE" : "ADD NEW EXPENSE"}
+      </Text>
 
       <TextInput
         value={expense}
@@ -70,8 +98,8 @@ export default function AddNewExpense(props: AddNewExpenseProps) {
         keyboardType="numeric"
       />
 
-      <TouchableOpacity onPress={handleAddNewExpense}>
-        <Text>Add your new expense</Text>
+      <TouchableOpacity onPress={handleAddOrUpdateExpense}>
+        <Text>{id ? "Update Expense" : "Add your new expense"}</Text>
       </TouchableOpacity>
     </KeyboardAvoidingView>
   );

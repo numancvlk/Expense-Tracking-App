@@ -1,6 +1,6 @@
 export type RootStackParamList = {
   SplashScreen: undefined;
   HomeScreen: undefined;
-  AddNewExpenseScreen: { id?: string };
+  AddNewExpenseScreen: { id?: string } | undefined;
   ExpenseDetailScreen: { id: string };
 };
