@@ -36,9 +36,11 @@ export default function AddNewExpense(props: AddNewExpenseProps) {
     try {
       const stored = await AsyncStorage.getItem(STORAGE_KEY);
       const expenseList = stored ? JSON.parse(stored) : [];
+
       const updatedList = [...expenseList, newExpense];
 
       await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedList));
+
       Alert.alert("Saved", "New expense added!");
 
       props.navigation.navigate("HomeScreen");

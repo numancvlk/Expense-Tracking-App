@@ -1,18 +1,16 @@
 import { View, Text, StyleSheet, TouchableOpacity, Alert } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "./types/Navigation";
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useFocusEffect } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import React from "react";
 
 type HomeScreenProps = NativeStackScreenProps<RootStackParamList, "HomeScreen">;
-type Expense = {
-  expense: string;
-  amount: number;
-};
 
 const STORAGE_KEY = "expenses";
 
-export default function HomeScreen({ navigation, route }: HomeScreenProps) {
+export default function HomeScreen({ navigation }: HomeScreenProps) {
   const [expenseList, setExpenseList] = useState<
     { expense: string; amount: number }[]
   >([]);
@@ -31,13 +29,15 @@ export default function HomeScreen({ navigation, route }: HomeScreenProps) {
     navigation.navigate("AddNewExpenseScreen");
   };
 
-  useEffect(() => {
-    const fetchExpenses = async () => {
-      const loadedExpenses = await loadExpenses();
-      setExpenseList(loadedExpenses);
-    };
-    fetchExpenses();
-  }, [route.params]);
+  useFocusEffect(
+    React.useCallback(() => {
+      const fetchExpenses = async () => {
+        const loadedExpenses = await loadExpenses();
+        setExpenseList(loadedExpenses);
+      };
+      fetchExpenses();
+    }, [])
+  );
 
   return (
     <View style={myStyles.container}>
@@ -47,7 +47,8 @@ export default function HomeScreen({ navigation, route }: HomeScreenProps) {
 
       <View>
         <Text>
-          Total Fee: {expenseList.reduce((sum, e) => +(e.amount || 0), 0)} $
+          Total Fee: {expenseList.reduce((sum, e) => sum + (e.amount || 0), 0)}{" "}
+          $
         </Text>
       </View>
 
