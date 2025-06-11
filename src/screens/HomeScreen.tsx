@@ -1,18 +1,43 @@
 import { View, Text, StyleSheet, TouchableOpacity, Alert } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "./types/Navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 type HomeScreenProps = NativeStackScreenProps<RootStackParamList, "HomeScreen">;
+type Expense = {
+  expense: string;
+  amount: number;
+};
+
+const STORAGE_KEY = "expenses";
 
 export default function HomeScreen({ navigation, route }: HomeScreenProps) {
-  const [expenseList, setExpenseList] = useState([]);
+  const [expenseList, setExpenseList] = useState<
+    { expense: string; amount: number }[]
+  >([]);
 
-  const { expense, numberAmount } = route.params ?? {};
+  const loadExpenses = async () => {
+    try {
+      const stored = await AsyncStorage.getItem(STORAGE_KEY);
+      return stored ? JSON.parse(stored) : [];
+    } catch (error) {
+      console.log("Loading Error", error);
+      return [];
+    }
+  };
 
   const handleNewExpense = () => {
     navigation.navigate("AddNewExpenseScreen");
   };
+
+  useEffect(() => {
+    const fetchExpenses = async () => {
+      const loadedExpenses = await loadExpenses();
+      setExpenseList(loadedExpenses);
+    };
+    fetchExpenses();
+  }, [route.params]);
 
   return (
     <View style={myStyles.container}>
@@ -21,13 +46,19 @@ export default function HomeScreen({ navigation, route }: HomeScreenProps) {
       <Text>YOUR EXPENSE</Text>
 
       <View>
-        <Text>Total Fee: 60$</Text>
+        <Text>
+          Total Fee: {expenseList.reduce((sum, e) => +(e.amount || 0), 0)} $
+        </Text>
       </View>
 
       <View style={myStyles.expenseBox}>
-        <Text>
-          {expense} - {numberAmount}$
-        </Text>
+        {expenseList.map((e, i) => {
+          return (
+            <Text key={i}>
+              {e.expense} - {e.amount}
+            </Text>
+          );
+        })}
       </View>
 
       <TouchableOpacity onPress={handleNewExpense}>
