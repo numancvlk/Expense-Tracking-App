@@ -7,12 +7,14 @@ import {
   Alert,
   View,
 } from "react-native";
+import { DateTimePickerEvent } from "@react-native-community/datetimepicker";
 import { useState, useEffect } from "react";
 
 import { RootStackParamList } from "./types/Navigation";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { RouteProp } from "@react-navigation/native";
+import DateTimePicker from "@react-native-community/datetimepicker";
 
 type AddNewExpenseProps = {
   navigation: NativeStackNavigationProp<
@@ -29,6 +31,13 @@ export default function AddNewExpense(props: AddNewExpenseProps) {
 
   const [expense, setExpense] = useState<string>("");
   const [amount, setAmount] = useState<string>("");
+  const [date, setDate] = useState<Date>(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
+
+  const onChangeDate = (event: DateTimePickerEvent, selectedDate?: Date) => {
+    setShowDatePicker(false);
+    if (selectedDate) setDate(selectedDate);
+  };
 
   useEffect(() => {
     if (id) {
@@ -38,6 +47,7 @@ export default function AddNewExpense(props: AddNewExpenseProps) {
         if (found) {
           setExpense(found.expense);
           setAmount(found.amount.toString());
+          setDate(new Date(found.date));
         }
       });
     }
@@ -56,7 +66,14 @@ export default function AddNewExpense(props: AddNewExpenseProps) {
       if (id) {
         // Düzenleme: mevcut kaydı güncelle
         const updatedList = expenseList.map((e: any) =>
-          e.id === id ? { ...e, expense, amount: parseFloat(amount) } : e
+          e.id === id
+            ? {
+                ...e,
+                expense,
+                amount: parseFloat(amount),
+                date: date.toISOString(),
+              }
+            : e
         );
         await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedList));
         Alert.alert("Updated", "Expense updated!");
@@ -66,6 +83,7 @@ export default function AddNewExpense(props: AddNewExpenseProps) {
           id: Date.now().toString(),
           expense,
           amount: parseFloat(amount),
+          date: date.toISOString(),
         };
         const updatedList = [...expenseList, newExpense];
 
@@ -105,9 +123,24 @@ export default function AddNewExpense(props: AddNewExpenseProps) {
           keyboardType="numeric"
           placeholderTextColor="#94a3b8"
         />
-
         <TouchableOpacity
-          style={myStyles.button}
+          style={myStyles.dateButton}
+          onPress={() => setShowDatePicker(true)}
+        >
+          <Text style={myStyles.buttonText}>
+            {date ? date.toLocaleDateString() : "Select a date"}
+          </Text>
+        </TouchableOpacity>
+        {showDatePicker && (
+          <DateTimePicker
+            value={date}
+            mode="date"
+            display="default"
+            onChange={onChangeDate}
+          />
+        )}
+        <TouchableOpacity
+          style={myStyles.addButton}
           onPress={handleAddOrUpdateExpense}
         >
           <Text style={myStyles.buttonText}>
@@ -169,8 +202,15 @@ const myStyles = StyleSheet.create({
     color: "#1e293b",
     backgroundColor: "#f9fafb",
   },
-  button: {
+  addButton: {
     backgroundColor: "#f97316",
+    paddingVertical: 14,
+    borderRadius: 10,
+    alignItems: "center",
+    marginTop: 8,
+  },
+  dateButton: {
+    backgroundColor: "#0dc0c9",
     paddingVertical: 14,
     borderRadius: 10,
     alignItems: "center",

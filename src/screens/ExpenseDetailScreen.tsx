@@ -21,6 +21,7 @@ export default function ExpenseDetailScreen({
     id: string;
     expense: string;
     amount: number;
+    date: string;
   } | null>();
 
   useEffect(() => {
@@ -68,10 +69,20 @@ export default function ExpenseDetailScreen({
     <View style={myStyles.container}>
       <Text style={myStyles.title}>EXPENSE DETAIL</Text>
       <View style={myStyles.detailBox}>
-        <Text style={myStyles.label}>Name</Text>
-        <Text style={myStyles.value}>{expense.expense}</Text>
-        <Text style={myStyles.label}>Amount</Text>
-        <Text style={myStyles.value}>{expense.amount}</Text>
+        <Text style={myStyles.label}>
+          Name: <Text style={myStyles.value}>{expense.expense}</Text>
+        </Text>
+
+        <Text style={myStyles.label}>
+          Amount: <Text style={myStyles.value}>{expense.amount}$</Text>
+        </Text>
+
+        <Text style={myStyles.label}>
+          Date:{" "}
+          <Text style={myStyles.value}>
+            {new Date(expense.date).toLocaleDateString()}
+          </Text>
+        </Text>
       </View>
 
       <View style={myStyles.buttonsRow}>

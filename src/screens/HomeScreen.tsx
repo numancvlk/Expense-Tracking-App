@@ -7,10 +7,11 @@ import {
 } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "./types/Navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useFocusEffect } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import React from "react";
+import DateTimePicker from "@react-native-community/datetimepicker";
 
 type HomeScreenProps = NativeStackScreenProps<RootStackParamList, "HomeScreen">;
 
@@ -18,8 +19,55 @@ const STORAGE_KEY = "expenses";
 
 export default function HomeScreen({ navigation }: HomeScreenProps) {
   const [expenseList, setExpenseList] = useState<
-    { id: string; expense: string; amount: number }[]
+    { id: string; expense: string; amount: number; date: string }[]
   >([]);
+
+  const [startDate, setStartDate] = useState<Date | null>(null);
+  const [endDate, setEndDate] = useState<Date | null>(null);
+  const [showStartPicker, setShowStartPicker] = useState(false);
+  const [showEndPicker, setShowEndPicker] = useState(false);
+  const [filteredList, setFilteredList] = useState<
+    { id: string; expense: string; amount: number; date: string }[]
+  >([]);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      const fetchExpenses = async () => {
+        const loadedExpenses = await loadExpenses();
+        setExpenseList(loadedExpenses);
+        setFilteredList(loadedExpenses);
+      };
+      fetchExpenses();
+    }, [])
+  );
+
+  useEffect(() => {
+    filterExpenses();
+  }, [startDate, endDate, expenseList]);
+
+  const filterExpenses = () => {
+    if (!startDate && !endDate) {
+      setFilteredList(expenseList);
+      return;
+    }
+
+    const filtered = expenseList.filter((item) => {
+      if (!item.date) return false;
+      const itemDate = new Date(item.date);
+
+      if (startDate && endDate) {
+        return itemDate >= startDate && itemDate <= endDate;
+      } else if (startDate) {
+        return (
+          itemDate.getFullYear() === startDate.getFullYear() &&
+          itemDate.getMonth() === startDate.getMonth() &&
+          itemDate.getDate() === startDate.getDate()
+        );
+      }
+      return false;
+    });
+    setFilteredList(filtered);
+  };
 
   const loadExpenses = async () => {
     try {
@@ -35,20 +83,14 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
     navigation.navigate("AddNewExpenseScreen", {});
   };
 
-  useFocusEffect(
-    React.useCallback(() => {
-      const fetchExpenses = async () => {
-        const loadedExpenses = await loadExpenses();
-        setExpenseList(loadedExpenses);
-      };
-      fetchExpenses();
-    }, [])
+  const totalExpense = filteredList.reduce(
+    (sum, e) => sum + (e.amount || 0),
+    0
   );
-  const totalExpense = expenseList.reduce((sum, e) => sum + (e.amount || 0), 0);
   const renderExpenseItem = ({
     item,
   }: {
-    item: { id: string; expense: string; amount: number };
+    item: { id: string; expense: string; amount: number; date: string };
   }) => (
     <TouchableOpacity
       style={myStyles.expenseItem}
@@ -59,6 +101,11 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
       <View>
         <Text style={myStyles.expenseName}>{item.expense}</Text>
         <Text style={myStyles.expenseAmount}>${item.amount.toFixed(2)}</Text>
+        {item.date && (
+          <Text style={myStyles.expenseDate}>
+            {new Date(item.date).toLocaleDateString()}
+          </Text>
+        )}
       </View>
     </TouchableOpacity>
   );
@@ -67,6 +114,53 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
     <View style={myStyles.container}>
       <Text style={myStyles.header}>WELCOME TO YOUR EXPENSE TRACKER</Text>
       <View style={myStyles.underline} />
+      <View
+        style={{
+          flexDirection: "row",
+          justifyContent: "space-between",
+          marginVertical: 10,
+        }}
+      >
+        <TouchableOpacity
+          style={myStyles.dateBox}
+          onPress={() => setShowStartPicker(true)}
+        >
+          <Text>
+            {startDate ? startDate.toDateString() : "Select Start Date"}
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={myStyles.dateBox}
+          onPress={() => setShowEndPicker(true)}
+        >
+          <Text>{endDate ? endDate.toDateString() : "Select End Date"}</Text>
+        </TouchableOpacity>
+      </View>
+
+      {showStartPicker && (
+        <DateTimePicker
+          value={startDate || new Date()}
+          mode="date"
+          display="default"
+          onChange={(event, selectedDate) => {
+            setShowStartPicker(false);
+            if (selectedDate) setStartDate(selectedDate);
+          }}
+        />
+      )}
+
+      {showEndPicker && (
+        <DateTimePicker
+          value={endDate || new Date()}
+          mode="date"
+          display="default"
+          onChange={(event, selectedDate) => {
+            setShowEndPicker(false);
+            if (selectedDate) setEndDate(selectedDate);
+          }}
+        />
+      )}
 
       <Text style={myStyles.subheader}>Your Expenses</Text>
 
@@ -76,7 +170,7 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
       </View>
 
       <FlatList
-        data={expenseList}
+        data={filteredList}
         keyExtractor={(item) => item.id}
         renderItem={renderExpenseItem}
         contentContainerStyle={myStyles.listContainer}
@@ -96,6 +190,11 @@ const myStyles = StyleSheet.create({
     backgroundColor: "#f0f4f8",
     paddingHorizontal: 20,
     paddingTop: 40,
+  },
+  expenseDate: {
+    fontSize: 12,
+    color: "#888",
+    marginTop: 4,
   },
   header: {
     fontSize: 28,
@@ -189,5 +288,14 @@ const myStyles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "700",
     color: "#fff",
+  },
+  dateBox: {
+    padding: 10,
+    borderWidth: 1,
+    borderColor: "#aaa",
+    borderRadius: 10,
+    backgroundColor: "#f0f0f0",
+    width: "48%",
+    alignItems: "center",
   },
 });
