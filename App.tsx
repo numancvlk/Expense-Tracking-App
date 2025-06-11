@@ -8,6 +8,7 @@ import SplashScreen from "./src/screens/SplashScreen";
 import HomeScreen from "./src/screens/HomeScreen";
 import AddNewExpense from "./src/screens/AddNewExpense";
 import { RootStackParamList } from "./src/screens/types/Navigation";
+import ExpenseDetailScreen from "./src/screens/ExpenseDetailScreen";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -22,6 +23,10 @@ export default function App() {
         />
         <Stack.Screen name="HomeScreen" component={HomeScreen} />
         <Stack.Screen name="AddNewExpenseScreen" component={AddNewExpense} />
+        <Stack.Screen
+          name="ExpenseDetailScreen"
+          component={ExpenseDetailScreen}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );

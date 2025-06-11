@@ -31,7 +31,11 @@ export default function AddNewExpense(props: AddNewExpenseProps) {
       return;
     }
 
-    const newExpense = { expense, amount: parseFloat(amount) };
+    const newExpense = {
+      id: Date.now().toString(),
+      expense,
+      amount: parseFloat(amount),
+    };
 
     try {
       const stored = await AsyncStorage.getItem(STORAGE_KEY);

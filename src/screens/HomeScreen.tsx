@@ -12,7 +12,7 @@ const STORAGE_KEY = "expenses";
 
 export default function HomeScreen({ navigation }: HomeScreenProps) {
   const [expenseList, setExpenseList] = useState<
-    { expense: string; amount: number }[]
+    { id: string; expense: string; amount: number }[]
   >([]);
 
   const loadExpenses = async () => {
@@ -26,7 +26,7 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
   };
 
   const handleNewExpense = () => {
-    navigation.navigate("AddNewExpenseScreen");
+    navigation.navigate("AddNewExpenseScreen", {});
   };
 
   useFocusEffect(
@@ -53,11 +53,18 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
       </View>
 
       <View style={myStyles.expenseBox}>
-        {expenseList.map((e, i) => {
+        {expenseList.map((e) => {
           return (
-            <Text key={i}>
-              {e.expense} - {e.amount}
-            </Text>
+            <TouchableOpacity
+              key={e.id}
+              onPress={() =>
+                navigation.navigate("ExpenseDetailScreen", { id: e.id })
+              }
+            >
+              <Text>
+                {e.expense} - {e.amount}
+              </Text>
+            </TouchableOpacity>
           );
         })}
       </View>
