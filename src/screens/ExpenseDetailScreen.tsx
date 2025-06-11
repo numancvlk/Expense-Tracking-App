@@ -1,4 +1,4 @@
-import { View, Text, Alert, TouchableOpacity } from "react-native";
+import { View, Text, Alert, TouchableOpacity, StyleSheet } from "react-native";
 import React from "react";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "./types/Navigation";
@@ -65,18 +65,94 @@ export default function ExpenseDetailScreen({
     );
   }
   return (
-    <View>
-      <Text>EXPENSE DETAIL</Text>
-      <Text>Name: {expense.expense}</Text>
-      <Text>Amount: {expense.amount}</Text>
+    <View style={myStyles.container}>
+      <Text style={myStyles.title}>EXPENSE DETAIL</Text>
+      <View style={myStyles.detailBox}>
+        <Text style={myStyles.label}>Name</Text>
+        <Text style={myStyles.value}>{expense.expense}</Text>
+        <Text style={myStyles.label}>Amount</Text>
+        <Text style={myStyles.value}>{expense.amount}</Text>
+      </View>
 
-      <TouchableOpacity onPress={deleteExpense}>
-        <Text>DELETE</Text>
-      </TouchableOpacity>
+      <View style={myStyles.buttonsRow}>
+        <TouchableOpacity style={myStyles.deleteButton} onPress={deleteExpense}>
+          <Text style={myStyles.buttonText}>DELETE</Text>
+        </TouchableOpacity>
 
-      <TouchableOpacity onPress={editExpense}>
-        <Text>EDIT</Text>
-      </TouchableOpacity>
+        <TouchableOpacity style={myStyles.editButton} onPress={editExpense}>
+          <Text style={myStyles.buttonText}>EDIT</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
+
+const myStyles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#f0f4f8",
+    padding: 20,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#f0f4f8",
+  },
+  title: {
+    fontSize: 26,
+    fontWeight: "bold",
+    color: "#1e293b",
+    textAlign: "center",
+    marginBottom: 24,
+    letterSpacing: 1,
+  },
+  detailBox: {
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    padding: 20,
+    shadowColor: "#f97316",
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 8,
+    marginBottom: 30,
+  },
+  label: {
+    fontSize: 14,
+    color: "#64748b",
+    fontWeight: "600",
+    marginTop: 12,
+  },
+  value: {
+    fontSize: 20,
+    color: "#1e293b",
+    fontWeight: "bold",
+    marginTop: 6,
+  },
+  buttonsRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  deleteButton: {
+    flex: 1,
+    backgroundColor: "#ef4444",
+    paddingVertical: 14,
+    borderRadius: 10,
+    alignItems: "center",
+    marginRight: 10,
+  },
+  editButton: {
+    flex: 1,
+    backgroundColor: "#f97316",
+    paddingVertical: 14,
+    borderRadius: 10,
+    alignItems: "center",
+    marginLeft: 10,
+  },
+  buttonText: {
+    color: "#fff",
+    fontWeight: "700",
+    fontSize: 16,
+  },
+});
