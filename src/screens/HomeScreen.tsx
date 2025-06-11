@@ -45,6 +45,11 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
     filterExpenses();
   }, [startDate, endDate, expenseList]);
 
+  const resetFilters = () => {
+    setStartDate(null);
+    setEndDate(null);
+  };
+
   const filterExpenses = () => {
     if (!startDate && !endDate) {
       setFilteredList(expenseList);
@@ -118,25 +123,52 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
         style={{
           flexDirection: "row",
           justifyContent: "space-between",
+          alignItems: "center",
           marginVertical: 10,
         }}
       >
         <TouchableOpacity
-          style={myStyles.dateBox}
+          style={[myStyles.dateBox, { width: "30%", paddingVertical: 8 }]}
           onPress={() => setShowStartPicker(true)}
         >
-          <Text>
-            {startDate ? startDate.toDateString() : "Select Start Date"}
+          <Text style={{ fontSize: 13, textAlign: "center" }}>
+            {startDate ? startDate.toDateString() : "Start Date"}
           </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={myStyles.dateBox}
+          style={[myStyles.dateBox, { width: "30%", paddingVertical: 8 }]}
           onPress={() => setShowEndPicker(true)}
         >
-          <Text>{endDate ? endDate.toDateString() : "Select End Date"}</Text>
+          <Text style={{ fontSize: 13, textAlign: "center" }}>
+            {endDate ? endDate.toDateString() : "End Date"}
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={resetFilters}
+          style={{
+            backgroundColor: "#e11d48",
+            width: "30%",
+            paddingVertical: 8,
+            borderRadius: 8,
+            alignItems: "center",
+            justifyContent: "center",
+            height: 40, // Tarih kutularının yaklaşık yüksekliği, istersen değiştir
+          }}
+        >
+          <Text style={{ color: "#fff", fontWeight: "bold", fontSize: 13 }}>
+            Reset
+          </Text>
         </TouchableOpacity>
       </View>
+
+      {(startDate || endDate) && (
+        <Text style={{ textAlign: "center", color: "#888", marginBottom: 8 }}>
+          Showing expenses {startDate ? `from ${startDate.toDateString()}` : ""}{" "}
+          {endDate ? `to ${endDate.toDateString()}` : ""}
+        </Text>
+      )}
 
       {showStartPicker && (
         <DateTimePicker
