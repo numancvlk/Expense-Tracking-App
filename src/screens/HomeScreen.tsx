@@ -53,7 +53,7 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
 
   useEffect(() => {
     filterExpenses();
-  }, [startDate, endDate, expenseList]);
+  }, [startDate, endDate, selectedCategory, expenseList]);
 
   const resetFilters = () => {
     setStartDate(null);
@@ -63,30 +63,19 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
   };
 
   const filterExpenses = () => {
-    if (!startDate && !endDate) {
-      setFilteredList(expenseList);
-      return;
-    }
-
-    let dateMatch = true;
-
     const filtered = expenseList.filter((item) => {
-      if (!item.date) return false;
       const itemDate = new Date(item.date);
 
-      if (startDate && endDate) {
-        return itemDate >= startDate && itemDate <= endDate;
-      } else if (startDate) {
-        dateMatch =
-          itemDate.getFullYear() === startDate.getFullYear() &&
-          itemDate.getMonth() === startDate.getMonth() &&
-          itemDate.getDate() === startDate.getDate();
-      }
-      const categoryMatch = selectedCategory
-        ? item.category === selectedCategory
-        : true;
-      return dateMatch && categoryMatch;
+      const isWithinDateRange =
+        (!startDate || itemDate >= startDate) &&
+        (!endDate || itemDate <= endDate);
+
+      const isMatchingCategory =
+        !selectedCategory || item.category === selectedCategory;
+
+      return isWithinDateRange && isMatchingCategory;
     });
+
     setFilteredList(filtered);
   };
 
