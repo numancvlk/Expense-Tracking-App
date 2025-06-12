@@ -4,6 +4,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   FlatList,
+  Modal,
 } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "./types/Navigation";
@@ -29,6 +30,8 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
   const [filteredList, setFilteredList] = useState<
     { id: string; expense: string; amount: number; date: string }[]
   >([]);
+
+  const [filterModalVisible, setFilterModalVisible] = useState(false);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -118,7 +121,9 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
   return (
     <View style={myStyles.container}>
       <Text style={myStyles.header}>WELCOME TO YOUR EXPENSE TRACKER</Text>
+
       <View style={myStyles.underline} />
+
       <View
         style={{
           flexDirection: "row",
@@ -127,40 +132,75 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
           marginVertical: 10,
         }}
       >
-        <TouchableOpacity
-          style={[myStyles.dateBox, { width: "30%", paddingVertical: 8 }]}
-          onPress={() => setShowStartPicker(true)}
-        >
-          <Text style={{ fontSize: 13, textAlign: "center" }}>
-            {startDate ? startDate.toDateString() : "Start Date"}
-          </Text>
+        <TouchableOpacity onPress={() => setFilterModalVisible(true)}>
+          <Text>Filter</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={[myStyles.dateBox, { width: "30%", paddingVertical: 8 }]}
-          onPress={() => setShowEndPicker(true)}
+        <Modal
+          visible={filterModalVisible}
+          animationType="slide"
+          transparent={false}
+          onRequestClose={() => setFilterModalVisible(false)}
         >
-          <Text style={{ fontSize: 13, textAlign: "center" }}>
-            {endDate ? endDate.toDateString() : "End Date"}
-          </Text>
-        </TouchableOpacity>
+          <View style={myStyles.modalOverlay}>
+            <View style={myStyles.modalContainer}>
+              <TouchableOpacity
+                style={[
+                  myStyles.dateInput,
+                  { width: "30%", paddingVertical: 8 },
+                ]}
+                onPress={() => setShowStartPicker(true)}
+              >
+                <Text style={{ fontSize: 13, textAlign: "center" }}>
+                  {startDate ? startDate.toDateString() : "Start Date"}
+                </Text>
+              </TouchableOpacity>
 
-        <TouchableOpacity
-          onPress={resetFilters}
-          style={{
-            backgroundColor: "#e11d48",
-            width: "30%",
-            paddingVertical: 8,
-            borderRadius: 8,
-            alignItems: "center",
-            justifyContent: "center",
-            height: 40, // Tarih kutularının yaklaşık yüksekliği, istersen değiştir
-          }}
-        >
-          <Text style={{ color: "#fff", fontWeight: "bold", fontSize: 13 }}>
-            Reset
-          </Text>
-        </TouchableOpacity>
+              <TouchableOpacity
+                style={[
+                  myStyles.dateInput,
+                  { width: "30%", paddingVertical: 8 },
+                ]}
+                onPress={() => setShowEndPicker(true)}
+              >
+                <Text style={{ fontSize: 13, textAlign: "center" }}>
+                  {endDate ? endDate.toDateString() : "End Date"}
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={resetFilters}
+                style={[
+                  myStyles.dateInput,
+                  {
+                    width: "30%",
+                    backgroundColor: "#e11d48",
+                  },
+                ]}
+              >
+                <Text
+                  style={{ color: "#fff", fontWeight: "bold", fontSize: 13 }}
+                >
+                  Reset
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => setFilterModalVisible(false)}
+                style={{
+                  marginTop: 12,
+                  alignItems: "center",
+                }}
+              >
+                <Text
+                  style={{ marginTop: 12, width: "100%", alignItems: "center" }}
+                >
+                  Close
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
       </View>
 
       {(startDate || endDate) && (
@@ -231,19 +271,18 @@ const myStyles = StyleSheet.create({
   header: {
     fontSize: 28,
     fontWeight: "bold",
-    color: "#1e293b", // Lacivert
+    color: "#1e293b",
     textAlign: "center",
     letterSpacing: 1,
   },
   underline: {
     height: 4,
     width: 120,
-    backgroundColor: "#f97316", // Parlak turuncu
+    backgroundColor: "#f97316",
     alignSelf: "center",
     marginTop: 6,
     marginBottom: 18,
     borderRadius: 2,
-    // Gradient yapabilirsin ileride, şu an basit renk
   },
   subheader: {
     fontSize: 20,
@@ -268,13 +307,13 @@ const myStyles = StyleSheet.create({
   totalText: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#6b7280", // Gri ton
+    color: "#6b7280",
     marginBottom: 4,
   },
   totalAmount: {
     fontSize: 32,
     fontWeight: "bold",
-    color: "#f97316", // Turuncu, dikkat çeker
+    color: "#f97316",
   },
   listContainer: {
     paddingBottom: 80,
@@ -321,13 +360,38 @@ const myStyles = StyleSheet.create({
     fontWeight: "700",
     color: "#fff",
   },
-  dateBox: {
-    padding: 10,
-    borderWidth: 1,
-    borderColor: "#aaa",
-    borderRadius: 10,
-    backgroundColor: "#f0f0f0",
-    width: "48%",
+
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "#fff", // Arka plan şeffaf değil
+    justifyContent: "center",
     alignItems: "center",
+  },
+  modalContainer: {
+    width: "90%",
+    backgroundColor: "#f3f4f6",
+    padding: 16,
+    borderRadius: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 5,
+    elevation: 5,
+
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+    rowGap: 12,
+    columnGap: 12,
+  },
+  dateInput: {
+    borderWidth: 1,
+    borderColor: "#d1d5db",
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    backgroundColor: "#fff",
+    alignItems: "center",
+    justifyContent: "center",
+    height: 48,
   },
 });

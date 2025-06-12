@@ -55,7 +55,7 @@ export default function ExpenseDetailScreen({
     );
   };
   const editExpense = () => {
-    navigation.navigate("AddNewExpenseScreen", { id: expense?.id }); // Bu kısmı sonra ekleyeceğiz
+    navigation.navigate("AddNewExpenseScreen", { id: expense?.id });
   };
 
   if (!expense) {
