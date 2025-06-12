@@ -6,6 +6,7 @@ import {
   KeyboardAvoidingView,
   Alert,
   View,
+  TouchableWithoutFeedback,
 } from "react-native";
 import { DateTimePickerEvent } from "@react-native-community/datetimepicker";
 import { useState, useEffect } from "react";
@@ -15,7 +16,7 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { RouteProp } from "@react-navigation/native";
 import DateTimePicker from "@react-native-community/datetimepicker";
-
+import { Picker } from "@react-native-picker/picker";
 type AddNewExpenseProps = {
   navigation: NativeStackNavigationProp<
     RootStackParamList,
@@ -24,6 +25,30 @@ type AddNewExpenseProps = {
   route: RouteProp<RootStackParamList, "AddNewExpenseScreen">;
 };
 
+const categoryOptions = [
+  "Food",
+  "Transport",
+  "Shopping",
+  "Bills",
+  "Market",
+  "Fuel",
+  "Personal Care",
+  "Clothing",
+  "Subscriptions",
+  "Entertainment",
+  "Rent",
+  "Utilities",
+  "Pets",
+  "Medical",
+  "Insurance",
+  "Books",
+  "Education",
+  "Investments",
+  "Hotels",
+  "Travel",
+  "Donations",
+  "Other",
+];
 const STORAGE_KEY = "expenses";
 
 export default function AddNewExpense(props: AddNewExpenseProps) {
@@ -31,13 +56,14 @@ export default function AddNewExpense(props: AddNewExpenseProps) {
 
   const [expense, setExpense] = useState<string>("");
   const [amount, setAmount] = useState<string>("");
-  const [date, setDate] = useState<Date>(new Date());
+  const [date, setDate] = useState<Date | null>(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
 
   const onChangeDate = (event: DateTimePickerEvent, selectedDate?: Date) => {
     setShowDatePicker(false);
     if (selectedDate) setDate(selectedDate);
   };
+  const [category, setCategory] = useState<string>(categoryOptions[0]);
 
   useEffect(() => {
     if (id) {
@@ -48,6 +74,7 @@ export default function AddNewExpense(props: AddNewExpenseProps) {
           setExpense(found.expense);
           setAmount(found.amount.toString());
           setDate(new Date(found.date));
+          setCategory(found.category || categoryOptions[0]);
         }
       });
     }
@@ -71,7 +98,8 @@ export default function AddNewExpense(props: AddNewExpenseProps) {
                 ...e,
                 expense,
                 amount: parseFloat(amount),
-                date: date.toISOString(),
+                date: date ? date.toISOString() : new Date().toISOString(),
+                category,
               }
             : e
         );
@@ -83,7 +111,8 @@ export default function AddNewExpense(props: AddNewExpenseProps) {
           id: Date.now().toString(),
           expense,
           amount: parseFloat(amount),
-          date: date.toISOString(),
+          date: date ? date.toISOString() : new Date().toISOString(),
+          category,
         };
         const updatedList = [...expenseList, newExpense];
 
@@ -123,22 +152,36 @@ export default function AddNewExpense(props: AddNewExpenseProps) {
           keyboardType="numeric"
           placeholderTextColor="#94a3b8"
         />
-        <TouchableOpacity
-          style={myStyles.dateButton}
-          onPress={() => setShowDatePicker(true)}
-        >
-          <Text style={myStyles.buttonText}>
-            {date ? date.toLocaleDateString() : "Select a date"}
-          </Text>
+        <TouchableOpacity onPress={() => setShowDatePicker(true)}>
+          <TextInput
+            style={myStyles.input}
+            value={date ? date.toLocaleDateString() : ""}
+            placeholder="Select a date"
+            editable={false}
+            pointerEvents="none"
+          />
         </TouchableOpacity>
+
         {showDatePicker && (
           <DateTimePicker
-            value={date}
+            value={date || new Date()}
             mode="date"
             display="default"
             onChange={onChangeDate}
           />
         )}
+        <Text style={myStyles.label}>Category</Text>
+        <View style={myStyles.pickerContainer}>
+          <Picker
+            selectedValue={category}
+            onValueChange={(itemValue) => setCategory(itemValue)}
+          >
+            {categoryOptions.map((cat) => (
+              <Picker.Item label={cat} value={cat} key={cat} />
+            ))}
+          </Picker>
+        </View>
+
         <TouchableOpacity
           style={myStyles.addButton}
           onPress={handleAddOrUpdateExpense}
@@ -220,5 +263,12 @@ const myStyles = StyleSheet.create({
     color: "#fff",
     fontWeight: "700",
     fontSize: 16,
+  },
+  pickerContainer: {
+    borderWidth: 1,
+    borderColor: "#cbd5e1",
+    borderRadius: 8,
+    marginBottom: 20,
+    backgroundColor: "#f9fafb",
   },
 });

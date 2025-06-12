@@ -22,6 +22,7 @@ export default function ExpenseDetailScreen({
     expense: string;
     amount: number;
     date: string;
+    category?: string;
   } | null>();
 
   useEffect(() => {
@@ -78,9 +79,16 @@ export default function ExpenseDetailScreen({
         </Text>
 
         <Text style={myStyles.label}>
-          Date:{" "}
+          Date:
           <Text style={myStyles.value}>
             {new Date(expense.date).toLocaleDateString()}
+          </Text>
+        </Text>
+
+        <Text style={myStyles.label}>
+          Category:
+          <Text style={myStyles.value}>
+            {expense.category || "Not specified"}
           </Text>
         </Text>
       </View>

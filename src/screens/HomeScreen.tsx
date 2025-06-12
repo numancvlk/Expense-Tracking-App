@@ -20,7 +20,13 @@ const STORAGE_KEY = "expenses";
 
 export default function HomeScreen({ navigation }: HomeScreenProps) {
   const [expenseList, setExpenseList] = useState<
-    { id: string; expense: string; amount: number; date: string }[]
+    {
+      id: string;
+      expense: string;
+      amount: number;
+      date: string;
+      category: string;
+    }[]
   >([]);
 
   const [startDate, setStartDate] = useState<Date | null>(null);
@@ -32,6 +38,7 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
   >([]);
 
   const [filterModalVisible, setFilterModalVisible] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -51,6 +58,8 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
   const resetFilters = () => {
     setStartDate(null);
     setEndDate(null);
+    setSelectedCategory(null);
+    setFilteredList(expenseList);
   };
 
   const filterExpenses = () => {
@@ -59,6 +68,8 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
       return;
     }
 
+    let dateMatch = true;
+
     const filtered = expenseList.filter((item) => {
       if (!item.date) return false;
       const itemDate = new Date(item.date);
@@ -66,13 +77,15 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
       if (startDate && endDate) {
         return itemDate >= startDate && itemDate <= endDate;
       } else if (startDate) {
-        return (
+        dateMatch =
           itemDate.getFullYear() === startDate.getFullYear() &&
           itemDate.getMonth() === startDate.getMonth() &&
-          itemDate.getDate() === startDate.getDate()
-        );
+          itemDate.getDate() === startDate.getDate();
       }
-      return false;
+      const categoryMatch = selectedCategory
+        ? item.category === selectedCategory
+        : true;
+      return dateMatch && categoryMatch;
     });
     setFilteredList(filtered);
   };
@@ -184,6 +197,54 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
                   Reset
                 </Text>
               </TouchableOpacity>
+
+              <Text style={myStyles.modalLabel}>Select Category</Text>
+              <View style={myStyles.categoryContainer}>
+                {[
+                  "Food",
+                  "Transport",
+                  "Shopping",
+                  "Bills",
+                  "Market",
+                  "Fuel",
+                  "Personal Care",
+                  "Clothing",
+                  "Subscriptions",
+                  "Entertainment",
+                  "Rent",
+                  "Utilities",
+                  "Pets",
+                  "Medical",
+                  "Insurance",
+                  "Books",
+                  "Education",
+                  "Investments",
+                  "Hotels",
+                  "Travel",
+                  "Donations",
+                  "Other",
+                ].map((cat) => (
+                  <TouchableOpacity
+                    key={cat}
+                    style={[
+                      myStyles.categoryButton,
+                      selectedCategory === cat &&
+                        myStyles.categoryButtonSelected,
+                    ]}
+                    onPress={() => setSelectedCategory(cat)}
+                  >
+                    <Text
+                      style={[
+                        myStyles.categoryButtonText,
+                        selectedCategory === cat &&
+                          myStyles.categoryButtonTextSelected,
+                      ]}
+                    >
+                      {cat}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
 
               <TouchableOpacity
                 onPress={() => setFilterModalVisible(false)}
@@ -393,5 +454,40 @@ const myStyles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     height: 48,
+  },
+  modalLabel: {
+    fontSize: 14,
+    fontWeight: "600",
+    marginTop: 16,
+    marginBottom: 6,
+    color: "#334155",
+  },
+
+  categoryContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    justifyContent: "center",
+  },
+
+  categoryButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    backgroundColor: "#e2e8f0",
+    borderRadius: 20,
+  },
+
+  categoryButtonSelected: {
+    backgroundColor: "#2563eb",
+  },
+
+  categoryButtonText: {
+    color: "#1e293b",
+    fontSize: 13,
+  },
+
+  categoryButtonTextSelected: {
+    color: "#fff",
+    fontWeight: "600",
   },
 });
