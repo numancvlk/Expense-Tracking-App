@@ -1,9 +1,17 @@
-import { View, Text, Alert, TouchableOpacity, StyleSheet } from "react-native";
+import {
+  View,
+  Text,
+  Alert,
+  TouchableOpacity,
+  StyleSheet,
+  Dimensions,
+} from "react-native";
 import React from "react";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "./types/Navigation";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useEffect, useState } from "react";
+import { PieChart } from "react-native-chart-kit";
 
 type ExpenseDetailScreen = NativeStackScreenProps<
   RootStackParamList,
@@ -16,7 +24,7 @@ export default function ExpenseDetailScreen({
   navigation,
   route,
 }: ExpenseDetailScreen) {
-  const { id } = route.params;
+  const { id, selectedExpense, allExpenses } = route.params;
   const [expense, setExpense] = useState<{
     id: string;
     expense: string;
@@ -24,6 +32,47 @@ export default function ExpenseDetailScreen({
     date: string;
     category?: string;
   } | null>();
+
+  const categoryColors: Record<string, string> = {
+    Food: "#e6194B",
+    Transport: "#3cb44b",
+    Shopping: "#ffe119",
+    Bills: "#4363d8",
+    Market: "#f58231",
+    Fuel: "#911eb4",
+    PersonalCare: "#46f0f0",
+    Clothing: "#f032e6",
+    Subscriptions: "#bcf60c",
+    Entertainment: "#fabebe",
+    Rent: "#008080",
+    Utilities: "#e6beff",
+    Pets: "#9a6324",
+    Medical: "#fffac8",
+    Insurance: "#800000",
+    Books: "#aaffc3",
+    Education: "#808000",
+    Investments: "#ffd8b1",
+    Hotels: "#000075",
+    Travel: "#808080",
+    Donations: "#2c676a",
+    Other: "#000000",
+  };
+
+  const chartData = Object.values(
+    allExpenses.reduce((acc, item) => {
+      if (!acc[item.category]) {
+        acc[item.category] = {
+          name: item.category,
+          amount: 0,
+          color: categoryColors[item.category] || "#000",
+          legendFontColor: "#333",
+          legendFontSize: 14,
+        };
+      }
+      acc[item.category].amount += item.amount;
+      return acc;
+    }, {} as Record<string, any>)
+  );
 
   useEffect(() => {
     const loadExpense = async () => {
@@ -102,6 +151,20 @@ export default function ExpenseDetailScreen({
           <Text style={myStyles.buttonText}>EDIT</Text>
         </TouchableOpacity>
       </View>
+      <PieChart
+        data={chartData}
+        width={Dimensions.get("window").width - 20}
+        height={220}
+        chartConfig={{
+          backgroundColor: "#fff",
+          backgroundGradientFrom: "#fff",
+          backgroundGradientTo: "#fff",
+          color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+        }}
+        accessor="amount"
+        backgroundColor="transparent"
+        paddingLeft="15"
+      />
     </View>
   );
 }

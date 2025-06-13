@@ -97,28 +97,39 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
     (sum, e) => sum + (e.amount || 0),
     0
   );
+
   const renderExpenseItem = ({
     item,
   }: {
     item: { id: string; expense: string; amount: number; date: string };
-  }) => (
-    <TouchableOpacity
-      style={myStyles.expenseItem}
-      onPress={() =>
-        navigation.navigate("ExpenseDetailScreen", { id: item.id })
-      }
-    >
-      <View>
-        <Text style={myStyles.expenseName}>{item.expense}</Text>
-        <Text style={myStyles.expenseAmount}>${item.amount.toFixed(2)}</Text>
-        {item.date && (
-          <Text style={myStyles.expenseDate}>
-            {new Date(item.date).toLocaleDateString()}
-          </Text>
-        )}
-      </View>
-    </TouchableOpacity>
-  );
+  }) => {
+    const selected = expenseList.find((expense) => expense.id === item.id);
+
+    return (
+      <TouchableOpacity
+        style={myStyles.expenseItem}
+        onPress={() => {
+          if (selected) {
+            navigation.navigate("ExpenseDetailScreen", {
+              id: item.id,
+              selectedExpense: selected,
+              allExpenses: expenseList,
+            });
+          }
+        }}
+      >
+        <View>
+          <Text style={myStyles.expenseName}>{item.expense}</Text>
+          <Text style={myStyles.expenseAmount}>${item.amount.toFixed(2)}</Text>
+          {item.date && (
+            <Text style={myStyles.expenseDate}>
+              {new Date(item.date).toLocaleDateString()}
+            </Text>
+          )}
+        </View>
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <View style={myStyles.container}>
