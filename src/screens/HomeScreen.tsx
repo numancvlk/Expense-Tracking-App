@@ -34,12 +34,43 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
   const [showStartPicker, setShowStartPicker] = useState(false);
   const [showEndPicker, setShowEndPicker] = useState(false);
   const [filteredList, setFilteredList] = useState<
-    { id: string; expense: string; amount: number; date: string }[]
+    {
+      id: string;
+      expense: string;
+      amount: number;
+      date: string;
+      category: string;
+    }[]
   >([]);
 
   const [filterModalVisible, setFilterModalVisible] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchText, setSearchText] = useState("");
+
+  const categoryColors: Record<string, string> = {
+    Food: "#e6194B",
+    Transport: "#3cb44b",
+    Shopping: "#ffe119",
+    Bills: "#4363d8",
+    Market: "#f58231",
+    Fuel: "#911eb4",
+    PersonalCare: "#46f0f0",
+    Clothing: "#f032e6",
+    Subscriptions: "#bcf60c",
+    Entertainment: "#fabebe",
+    Rent: "#008080",
+    Utilities: "#e6beff",
+    Pets: "#9a6324",
+    Medical: "#fffac8",
+    Insurance: "#800000",
+    Books: "#aaffc3",
+    Education: "#808000",
+    Investments: "#ffd8b1",
+    Hotels: "#000075",
+    Travel: "#808080",
+    Donations: "#2c676a",
+    Other: "#000000",
+  };
 
   useFocusEffect(
     React.useCallback(() => {
@@ -105,31 +136,57 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
   const renderExpenseItem = ({
     item,
   }: {
-    item: { id: string; expense: string; amount: number; date: string };
+    item: {
+      id: string;
+      expense: string;
+      amount: number;
+      date: string;
+      category: string;
+    };
   }) => {
-    const selected = expenseList.find((expense) => expense.id === item.id);
-
+    const categoryColor = categoryColors[item.category] || "#000";
     return (
       <TouchableOpacity
         style={myStyles.expenseItem}
-        onPress={() => {
-          if (selected) {
-            navigation.navigate("ExpenseDetailScreen", {
-              id: item.id,
-              selectedExpense: selected,
-              allExpenses: expenseList,
-            });
-          }
-        }}
+        onPress={() =>
+          navigation.navigate("ExpenseDetailScreen", {
+            id: item.id,
+            selectedExpense: item,
+            allExpenses: expenseList,
+          })
+        }
       >
-        <View>
-          <Text style={myStyles.expenseName}>{item.expense}</Text>
-          <Text style={myStyles.expenseAmount}>${item.amount.toFixed(2)}</Text>
-          {item.date && (
-            <Text style={myStyles.expenseDate}>
-              {new Date(item.date).toLocaleDateString()}
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <View>
+            <Text style={myStyles.expenseName}>{item.expense}</Text>
+            <Text style={myStyles.expenseAmount}>
+              ${item.amount.toFixed(2)}
             </Text>
-          )}
+            {item.date && (
+              <Text style={myStyles.expenseDate}>
+                {new Date(item.date).toLocaleDateString()}
+              </Text>
+            )}
+          </View>
+
+          <View
+            style={{
+              backgroundColor: categoryColor,
+              paddingHorizontal: 10,
+              paddingVertical: 4,
+              borderRadius: 12,
+            }}
+          >
+            <Text style={{ color: "white", fontWeight: "bold" }}>
+              {item.category}
+            </Text>
+          </View>
         </View>
       </TouchableOpacity>
     );
