@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   FlatList,
   Modal,
+  TextInput,
 } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "./types/Navigation";
@@ -13,7 +14,6 @@ import { useFocusEffect } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import React from "react";
 import DateTimePicker from "@react-native-community/datetimepicker";
-
 type HomeScreenProps = NativeStackScreenProps<RootStackParamList, "HomeScreen">;
 
 const STORAGE_KEY = "expenses";
@@ -39,6 +39,7 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
 
   const [filterModalVisible, setFilterModalVisible] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [searchText, setSearchText] = useState("");
 
   useFocusEffect(
     React.useCallback(() => {
@@ -62,7 +63,7 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
     setFilteredList(expenseList);
   };
 
-  const filterExpenses = () => {
+  const filterExpenses = (search = searchText) => {
     const filtered = expenseList.filter((item) => {
       const itemDate = new Date(item.date);
 
@@ -73,7 +74,10 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
       const isMatchingCategory =
         !selectedCategory || item.category === selectedCategory;
 
-      return isWithinDateRange && isMatchingCategory;
+      const isMatchingSearch =
+        !search || item.expense.toLowerCase().includes(search.toLowerCase());
+
+      return isWithinDateRange && isMatchingCategory && isMatchingSearch;
     });
 
     setFilteredList(filtered);
@@ -145,9 +149,43 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
           marginVertical: 10,
         }}
       >
-        <TouchableOpacity onPress={() => setFilterModalVisible(true)}>
-          <Text>Filter</Text>
-        </TouchableOpacity>
+        <View
+          style={{ flexDirection: "row", alignItems: "center", margin: 10 }}
+        >
+          <TextInput
+            style={{
+              flex: 1,
+              height: 40,
+              borderColor: "#ccc",
+              borderWidth: 1,
+              borderRadius: 8,
+              paddingHorizontal: 10,
+              marginRight: 10,
+            }}
+            placeholder="Search expenses..."
+            value={searchText}
+            onChangeText={(text) => {
+              setSearchText(text);
+              filterExpenses(text);
+            }}
+          />
+
+          <TouchableOpacity
+            onPress={() => {
+              setFilterModalVisible(true);
+            }}
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              backgroundColor: "#007bff",
+              paddingHorizontal: 15,
+              paddingVertical: 10,
+              borderRadius: 8,
+            }}
+          >
+            <Text style={{ color: "#fff", marginLeft: 5 }}>Filter</Text>
+          </TouchableOpacity>
+        </View>
 
         <Modal
           visible={filterModalVisible}
