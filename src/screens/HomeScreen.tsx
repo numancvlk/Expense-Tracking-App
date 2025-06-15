@@ -56,7 +56,7 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
     Fuel: "#911eb4",
     PersonalCare: "#46f0f0",
     Clothing: "#f032e6",
-    Subscriptions: "#bcf60c",
+    Subscriptions: "#bcf60c", // Açık yeşil
     Entertainment: "#fabebe",
     Rent: "#008080",
     Utilities: "#e6beff",
@@ -66,7 +66,7 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
     Books: "#aaffc3",
     Education: "#808000",
     Investments: "#ffd8b1",
-    Hotels: "#000075",
+    Hotels: "#000075", // Koyu mavi
     Travel: "#808080",
     Donations: "#2c676a",
     Other: "#000000",
@@ -145,6 +145,15 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
     };
   }) => {
     const categoryColor = categoryColors[item.category] || "#000";
+    const categoryTextColor =
+      categoryColor === "#bcf60c" ||
+      categoryColor === "#ffe119" ||
+      categoryColor === "#fffac8" ||
+      categoryColor === "#aaffc3" ||
+      categoryColor === "#ffd8b1"
+        ? "#000"
+        : "#fff";
+
     return (
       <TouchableOpacity
         style={myStyles.expenseItem}
@@ -156,34 +165,32 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
           })
         }
       >
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          <View>
-            <Text style={myStyles.expenseName}>{item.expense}</Text>
-            <Text style={myStyles.expenseAmount}>
-              ${item.amount.toFixed(2)}
+        <View>
+          <Text style={myStyles.expenseName}>{item.expense}</Text>
+          <Text style={myStyles.expenseAmount}>${item.amount.toFixed(2)}</Text>
+          {item.date && (
+            <Text style={myStyles.expenseDate}>
+              {new Date(item.date).toLocaleDateString()}
             </Text>
-            {item.date && (
-              <Text style={myStyles.expenseDate}>
-                {new Date(item.date).toLocaleDateString()}
-              </Text>
-            )}
-          </View>
-
+          )}
+        </View>
+        <View style={{ alignItems: "flex-end", justifyContent: "center" }}>
           <View
-            style={{
-              backgroundColor: categoryColor,
-              paddingHorizontal: 10,
-              paddingVertical: 4,
-              borderRadius: 12,
-            }}
+            style={[
+              myStyles.categoryButton,
+              {
+                backgroundColor: categoryColor,
+                paddingVertical: 4,
+                paddingHorizontal: 8,
+              },
+            ]}
           >
-            <Text style={{ color: "white", fontWeight: "bold" }}>
+            <Text
+              style={[
+                myStyles.categoryButtonText,
+                { color: categoryTextColor },
+              ]}
+            >
               {item.category}
             </Text>
           </View>
@@ -481,6 +488,7 @@ const myStyles = StyleSheet.create({
     borderRadius: 10,
     flexDirection: "row",
     justifyContent: "space-between",
+    alignItems: "center",
     shadowColor: "#000",
     shadowOpacity: 0.1,
     shadowRadius: 6,
@@ -519,7 +527,7 @@ const myStyles = StyleSheet.create({
 
   modalOverlay: {
     flex: 1,
-    backgroundColor: "#fff", // Arka plan şeffaf değil
+    backgroundColor: "#fff",
     justifyContent: "center",
     alignItems: "center",
   },
